@@ -1,0 +1,86 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="mgl">
+      <UniqueIdentifier>{6beb2a8c-123e-44c9-9ce4-370122f7774c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{c06e121b-7e92-4f58-9ef9-d9eebf6a1bbc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{5491c6c2-3bac-490f-a33c-b1482ddf8300}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{c26f5cc9-d70a-4746-a78d-bd21d54a5a23}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\mgl\mglMesh.cpp">
+      <Filter>mgl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mgl\mglShader.cpp">
+      <Filter>mgl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mgl\mglApp.cpp">
+      <Filter>mgl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mgl\mglError.cpp">
+      <Filter>mgl</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="InputManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mgl\mglCamera.cpp">
+      <Filter>mgl</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneNode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\mgl\mglMesh.hpp">
+      <Filter>mgl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mgl\mglScenegraph.hpp">
+      <Filter>mgl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mgl\mglShader.hpp">
+      <Filter>mgl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mgl\mgl.hpp">
+      <Filter>mgl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mgl\mglApp.hpp">
+      <Filter>mgl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mgl\mglConventions.hpp">
+      <Filter>mgl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mgl\mglError.hpp">
+      <Filter>mgl</Filter>
+    </ClInclude>
+    <ClInclude Include="InputManager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mgl\mglCamera.hpp">
+      <Filter>mgl</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneNode.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\shaders\cube-vs.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\shaders\cube-fs.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>

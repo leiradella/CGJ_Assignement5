@@ -5,7 +5,6 @@
 *.slo
 *.lo
 *.o
-*.obj
 
 # Precompiled Headers
 *.gch
@@ -30,3 +29,6 @@
 *.exe
 *.out
 *.app
+code/src/.vs/*
+code/src/x64
+code/src/CGJ_Assignement5/x64
