@@ -76,10 +76,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\shaders\cube-vs.glsl">
+    <None Include="..\shaders\vertex.vert">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\shaders\cube-fs.glsl">
+    <None Include="..\shaders\fragment.frag">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

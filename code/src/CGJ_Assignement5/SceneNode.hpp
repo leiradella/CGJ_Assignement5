@@ -14,7 +14,7 @@ class SceneNode {
 public:
 	SceneNode(mgl::Mesh* m, mgl::ShaderProgram* Shaders);
 	void addChild(SceneNode* child);
-	void draw(GLint ModelMatrixId);
+	void draw(GLint ModelMatrixId, GLint viewPosId, glm::vec3 eye);
 	std::vector<SceneNode*> getChildren() { return children; };
 
 	void setPosition(glm::vec3 pos) { position = pos; }

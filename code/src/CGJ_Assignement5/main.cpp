@@ -50,10 +50,7 @@ private:
 ///////////////////////////////////////////////////////////////////////// MESHES
 
 mgl::Mesh* MyApp::createMesh(std::string meshFile) {
-    size_t dotpos = meshFile.find('.');
-    std::string fileName = meshFile.substr(0, dotpos);
-
-    std::string mesh_dir = "../assets/" + fileName + "/";
+    std::string mesh_dir = "../assets/";
     std::string mesh_fullname = mesh_dir + meshFile;
 
 
@@ -67,8 +64,8 @@ mgl::Mesh* MyApp::createMesh(std::string meshFile) {
 
 void MyApp::createShaderPrograms() {
     Shaders = new mgl::ShaderProgram();
-    Shaders->addShader(GL_VERTEX_SHADER, "../shaders/cube-vs.glsl");
-    Shaders->addShader(GL_FRAGMENT_SHADER, "../shaders/cube-fs.glsl");
+    Shaders->addShader(GL_VERTEX_SHADER, "../shaders/vertex.vert");
+    Shaders->addShader(GL_FRAGMENT_SHADER, "../shaders/fragment.frag");
 
     Shaders->addAttribute(mgl::POSITION_ATTRIBUTE, mgl::Mesh::POSITION);
     Shaders->addAttribute(mgl::NORMAL_ATTRIBUTE, mgl::Mesh::NORMAL);
@@ -87,7 +84,7 @@ void MyApp::createSceneGraph() {
 
     //////add children
     //wooden base
-    mgl::Mesh* woodMesh = createMesh("wooden-base.obj");
+    mgl::Mesh* woodMesh = createMesh("wooden-base/wooden-base.obj");
     root->addChild(new SceneNode(woodMesh, Shaders));
 
     //get the children vector
@@ -96,7 +93,7 @@ void MyApp::createSceneGraph() {
     //set the wooden base a bit lower
     //children[0]->setPosition(glm::vec3(0.0f, -2.0f, 0.0f));
     //children[0]->setRotation(glm::vec3(90.0f, 0.0f, 0.0f));
-    children[0]->setTexure("wooden-base.jpg");
+    children[0]->setTexure("wooden-base/wooden-base.jpg");
 }
 
 ///////////////////////////////////////////////////////////////////////// CAMERA
@@ -115,7 +112,7 @@ void MyApp::createInputManager() {
 /////////////////////////////////////////////////////////////////////////// DRAW
 
 void MyApp::drawScene() {
-    root->draw(ModelMatrixId);
+    root->draw(ModelMatrixId, glGetUniformLocation(Shaders->ProgramId, "viewPos"), Camera->getEye());
 }
 
 ////////////////////////////////////////////////////////////////////// CALLBACKS
