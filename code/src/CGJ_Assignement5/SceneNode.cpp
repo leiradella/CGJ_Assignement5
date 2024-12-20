@@ -2,6 +2,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+#include <ctime>
+#include <cstdlib>
+
 SceneNode::SceneNode(mgl::Mesh* mesh, mgl::ShaderProgram* Shaders) {
 	this->mesh = mesh;
 	parent = NULL;
@@ -51,8 +54,10 @@ void SceneNode::setTexure(std::string texFile) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	int width, height, nr_channels;
-	unsigned char *data = stbi_load(texFullName.c_str(), &width, &height, &nr_channels, 4);
+
+	int width = 512, height = 512, nr_channels;
+	//unsigned char *data = stbi_load(texFullName.c_str(), &width, &height, &nr_channels, 4);
+	unsigned char* data = createWoodTexture(width, height);
 	if (data != NULL) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
@@ -62,5 +67,42 @@ void SceneNode::setTexure(std::string texFile) {
 	}
 	stbi_image_free(data);
 	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+unsigned char* SceneNode::createWoodTexture(int width, int height) {
+	unsigned char* noiseData = new unsigned char[width * height * 4]; //RGBA
+	std::srand(std::time(nullptr));
+
+	for (int y = 0; y < height; ++y) {
+		float distance = 0;
+		for (int x = 0; x < width; ++x) {
+			//get the current grid coordinates
+			float nx = (float)(x) / (float)(width);
+			float ny = (float)(y) / (float)(height);
+			unsigned char r,g,b,a = 255.0f;
+
+			int check = x;
+			if ((check % 32) == 0) {
+				distance = 0;
+				r = 0;
+				g = 0;
+				b = 0;
+			}
+			else {
+				distance += 0.1;
+				r = (unsigned char)(glm::clamp(139.0f + distance * 50.0f, 0.0f, 255.0f)); // Base brown: 139
+				g = (unsigned char)(glm::clamp(69.0f + distance * 30.0f, 0.0f, 255.0f));  // Base greenish tint: 69
+				b = (unsigned char)(glm::clamp(19.0f + distance * 20.0f, 0.0f, 255.0f));  // Base dark brown: 19
+			}
+
+			int index = ((y * width) + x) * 4;
+			noiseData[index+0] = r; //r
+			noiseData[index+1] = g; //g
+			noiseData[index+2] = b; //b
+			noiseData[index+3] = a; //a
+
+		}
+	}
+	return noiseData;
 }
 

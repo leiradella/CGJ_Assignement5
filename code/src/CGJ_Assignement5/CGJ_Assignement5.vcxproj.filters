@@ -76,10 +76,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\shaders\vertex.vert">
+    <None Include="..\shaders\base.vert">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\shaders\fragment.frag">
+    <None Include="..\shaders\base.frag">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

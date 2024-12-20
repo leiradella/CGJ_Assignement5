@@ -40,7 +40,7 @@ private:
     mgl::Mesh* Mesh = nullptr;
 
     mgl::Mesh* createMesh(std::string meshFile);
-    void createShaderPrograms();
+    void createShaderPrograms(std::string shaderName);
     void createSceneGraph();
     void createCamera();
     void createInputManager();
@@ -62,10 +62,14 @@ mgl::Mesh* MyApp::createMesh(std::string meshFile) {
 
 ///////////////////////////////////////////////////////////////////////// SHADER
 
-void MyApp::createShaderPrograms() {
+void MyApp::createShaderPrograms(std::string shaderName) {
     Shaders = new mgl::ShaderProgram();
-    Shaders->addShader(GL_VERTEX_SHADER, "../shaders/vertex.vert");
-    Shaders->addShader(GL_FRAGMENT_SHADER, "../shaders/fragment.frag");
+
+    std::string vertexShader = "../shaders/" + shaderName + ".vert";
+    std::string fragmentShader = "../shaders/" + shaderName + ".frag";
+
+    Shaders->addShader(GL_VERTEX_SHADER, vertexShader.c_str());
+    Shaders->addShader(GL_FRAGMENT_SHADER, fragmentShader.c_str());
 
     Shaders->addAttribute(mgl::POSITION_ATTRIBUTE, mgl::Mesh::POSITION);
     Shaders->addAttribute(mgl::NORMAL_ATTRIBUTE, mgl::Mesh::NORMAL);
@@ -118,7 +122,7 @@ void MyApp::drawScene() {
 ////////////////////////////////////////////////////////////////////// CALLBACKS
 
 void MyApp::initCallback(GLFWwindow* win) {
-    createShaderPrograms();
+    createShaderPrograms("base");
     createSceneGraph();
     createCamera();
     createInputManager();

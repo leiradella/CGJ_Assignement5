@@ -19,7 +19,7 @@ void main(void)
 {
 	exPosition = inPosition;
 	exTexcoord = inTexcoord;
-	exNormal = inNormal;
+	exNormal = mat3(transpose(inverse(ModelMatrix))) * inNormal;
 
 	vec4 MCPosition = vec4(inPosition, 1.0);
 	gl_Position = ProjectionMatrix * ViewMatrix * ModelMatrix * MCPosition;

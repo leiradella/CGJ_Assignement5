@@ -42,8 +42,8 @@
     <ClInclude Include="stb_image.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\shaders\fragment.frag" />
-    <None Include="..\shaders\vertex.vert" />
+    <None Include="..\shaders\base.frag" />
+    <None Include="..\shaders\base.vert" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
