@@ -44,6 +44,8 @@
   <ItemGroup>
     <None Include="..\shaders\base.frag" />
     <None Include="..\shaders\base.vert" />
+    <None Include="..\shaders\toon.frag" />
+    <None Include="..\shaders\toon.vert" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

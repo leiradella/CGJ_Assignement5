@@ -24,9 +24,19 @@ public:
 	void setScale(glm::vec3 scale) { this->scale = scale; }
 	glm::vec3 getScale() { return scale; }
 	
-	void setTexure(std::string texFile);
+	void createTextureImage(std::string texFile);
 
-	unsigned char* createPerlinTexture(int width, int height);
+	//perlin Texture functions
+	void createTexturePerlin(int width, int height, float freq = 1.0f, float amp = 1.0f);
+	unsigned char* createPerlinNoise(int width, int height, float freq, float amp);
+
+	//wood texture functions (NOT WORKING RIGHT)
+	void createTextureWood(int width, int height, float freq = 1.0f, float amp = 1.0f);
+	unsigned char* createWood(int width, int height, float freq, float amp);
+
+	//Solid color option
+	void createTextureColor(int width, int height, float r, float g, float b);
+	unsigned char* createColor(int width, int height, float r, float g, float b);
 
 protected:
 	SceneNode* parent;

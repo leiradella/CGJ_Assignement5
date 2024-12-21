@@ -88,16 +88,16 @@ void MyApp::createSceneGraph() {
 
     //////add children
     //wooden base
-    mgl::Mesh* woodMesh = createMesh("wooden-base/wooden-base.obj");
+    mgl::Mesh* woodMesh = createMesh("wooden-base/bunny-vn-smooth.obj");
     root->addChild(new SceneNode(woodMesh, Shaders));
 
     //get the children vector
     std::vector<SceneNode*> children = root->getChildren();
     
     //set the wooden base a bit lower
-    //children[0]->setPosition(glm::vec3(0.0f, -2.0f, 0.0f));
-    //children[0]->setRotation(glm::vec3(90.0f, 0.0f, 0.0f));
-    children[0]->setTexure("wooden-base/wooden-base.jpg");
+    //children[0]->setPosition(glm::vec3(0.0f, 0.0f, 0.0f));
+    children[0]->createTexturePerlin(512, 512);
+    //children[0]->createTextureImage("wooden-base/wooden-base.jpg");
 }
 
 ///////////////////////////////////////////////////////////////////////// CAMERA
@@ -106,23 +106,23 @@ void MyApp::createCamera() {
     Camera = new mgl::Camera(UBO_BP);
 }
 
-/////////////////////////////////////////////////////////////////////////// INPUT MANAGER
+///////////////////////////////////////////////////////////////////////// INPUT MANAGER
 
 void MyApp::createInputManager() {
     inputManager = new InputManager;
     inputManager->setCamera(Camera);
 }
 
-/////////////////////////////////////////////////////////////////////////// DRAW
+///////////////////////////////////////////////////////////////////////// DRAW
 
 void MyApp::drawScene() {
     root->draw(ModelMatrixId, glGetUniformLocation(Shaders->ProgramId, "viewPos"), Camera->getEye());
 }
 
-////////////////////////////////////////////////////////////////////// CALLBACKS
+///////////////////////////////////////////////////////////////////////// CALLBACKS
 
 void MyApp::initCallback(GLFWwindow* win) {
-    createShaderPrograms("base");
+    createShaderPrograms("toon");
     createSceneGraph();
     createCamera();
     createInputManager();

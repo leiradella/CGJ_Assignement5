@@ -42,7 +42,7 @@ void SceneNode::addChild(SceneNode* child) {
 	child->parent = this;
 }
 
-void SceneNode::setTexure(std::string texFile) {
+void SceneNode::createTextureImage(std::string texFile) {
 	std::string texDir = "../assets/";
 	std::string texFullName = texDir + texFile;
 
@@ -56,21 +56,17 @@ void SceneNode::setTexure(std::string texFile) {
 
 
 	int width = 800, height = 800, nr_channels;
-	//unsigned char *data = stbi_load(texFullName.c_str(), &width, &height, &nr_channels, 4);
-	unsigned char* data = createPerlinTexture(width, height);
-	FILE* fp = fopen("tex.data", "wb");
-	fwrite(data, 1, width * height * 4, fp);
-	fclose(fp);
-	//exit(0);
+	unsigned char *data = stbi_load(texFullName.c_str(), &width, &height, &nr_channels, 4);
 	if (data != NULL) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
+		stbi_image_free(data);
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 	else {
 		printf("Failed to load texture %s\n", texFullName.c_str());
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
-	//stbi_image_free(data);
-	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 //this is for making the gradiets in the grid for perlin noise
@@ -110,10 +106,10 @@ float perlinNoise(float x, float y) {
 	//////step 2: gradients
 	////point A (x0, y0)
 	glm::vec2 gradient = grad(x0, y0);
-	//vector grid -> point
+	//vector: grid -> point
 	float dx = x - (float)x0;
 	float dy = y - (float)y0;
-	//dot product between random gradiant
+	//dot product between random gradiant and the grid point vector
 	float iA = (gradient.x * dx) + (gradient.y * dy);
 
 	////point B (x1, y0)
@@ -144,28 +140,24 @@ float perlinNoise(float x, float y) {
 	return value;
 }
 
-unsigned char* SceneNode::createPerlinTexture(int width, int height) {
+unsigned char* SceneNode::createPerlinNoise(int width, int height, float freq, float amp) {
 	unsigned char* data = new unsigned char[width * height * 4]; //RGBA
 	const int GRID_SIZE = 32;
 
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
-		
+			float val = 0.0f;
+
 			//harmonics
-			float freq = 1;
-			float amp = 1;
-			float val = 0;
-			float totalAmp = 0.0f;	
-			
+			float frequency = freq;
+			float amplitude = amp;
 			for (int i = 0; i < 8; i++) {		
-				totalAmp += amp;
-				val += perlinNoise(x * freq / GRID_SIZE, y * freq / GRID_SIZE) * amp;
-				freq *= 2;
-				amp /= 2;
+				val += perlinNoise(x * frequency / GRID_SIZE, y * frequency / GRID_SIZE) * amplitude;
+				frequency *= 2;
+				amplitude /= 2;
 			}
 
 			//clamp to prevent numbers going outside the range [-1, 1]
-			val /= totalAmp;
 			if (val < -1.0f) { val = -1.0f; }
 			else if (val > 1.0f) { val = 1.0f; }
 			val = (val + 1.0f) * 0.5f * 255.0f;
@@ -181,50 +173,78 @@ unsigned char* SceneNode::createPerlinTexture(int width, int height) {
 	return data;
 }
 
-/*
-	//start of the grid block
-	int x0 = (int)(x);
-	int y0 = (int)(y);
-	//end of the grid block
-	int x1 = x0 + 1;
-	int y1 = y0 + 1;
-	//coordinates inside the grid block
-	float gx = x - (float)x0;
-	float gy = y - (float)y0;
+void SceneNode::createTexturePerlin(int width, int height, float freq, float amp) {
+	glGenTextures(1, &texture);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	unsigned char* data = createPerlinNoise(width, height, freq, amp);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+}
 
-	//////top two cornres
-	//top left
-	glm::vec2 gradient = { glm::cos(std::rand()), glm::sin(std::rand()) };
-	gradient = glm::normalize(gradient);
-	float dx = x - (float)x0;
-	float dy = y - (float)y0;
-	float dot1 = (gradient.x * dx) + (gradient.y * dy);
-	//top right
-	gradient = { glm::cos(std::rand()), glm::sin(std::rand()) };
-	gradient = glm::normalize(gradient);
-	dx = x - (float)x1;
-	dy = y - (float)y0;
-	float dot2 = (gradient.x * dx) + (gradient.y * dy);
-	//interpolate both
-	float ix1 = (dot2 - dot1) * (3.0f - (gx * 2.0f)) * gx * gx * dot1;
+unsigned char* SceneNode::createWood(int width, int height, float freq, float amp) {
+	unsigned char* data = new unsigned char[width * height * 4]; // RGBA
 
-	//////bottom two cornres
-	//bottom left
-	gradient = { glm::cos(std::rand()), glm::sin(std::rand()) };
-	gradient = glm::normalize(gradient);
-	dx = x - (float)x0;
-	dy = y - (float)y1;
-	dot1 = (gradient.x * dx) + (gradient.y * dy);
-	//bottom right
-	gradient = { glm::cos(std::rand()), glm::sin(std::rand()) };
-	gradient = glm::normalize(gradient);
-	dx = x - (float)x1;
-	dy = y - (float)y1;
-	dot2 = (gradient.x * dx) + (gradient.y * dy);
-	//interpolate both
-	float ix2 = (dot2 - dot1) * (3.0f - (gx * 2.0f)) * gx * gx * dot1;
+	float ringFactor = 50.0f;
 
-	//interpolate the 2 results
-	float value = (ix2 - ix1) * (3.0f - (gy * 2.0f)) * gy * gy * ix1;
-	return value;
-*/
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++) {
+			// Radial distance
+			float dx = (x - width / 2.0f) / (float)width;
+			float dy = (y - height / 2.0f) / (float)height;
+			float baseDist = sqrt(dx * dx + dy * dy) * ringFactor;
+
+			// Distort the rings using freq
+			float distortion = perlinNoise(x * freq / width, y * freq / height) * amp;
+
+			// Combine base distance and distortion
+			float dist = baseDist + distortion;
+
+			// Create sine wave for rings (amp controls thickness via `smoothstep`)
+			float woodValue = sin(dist) * 0.5f + 0.5f; // Normalize to [0, 1]
+			woodValue = glm::smoothstep(0.5f - amp * 0.1f, 0.5f + amp * 0.1f, woodValue);
+
+			// Create a color gradient
+			float gradientFactor = (float)y / height; // Vertical gradient
+			unsigned char red = (unsigned char)((woodValue * 200.0f + 55.0f) * (1.0f - gradientFactor));
+			unsigned char green = (unsigned char)((woodValue * 140.0f + 30.0f) * (1.0f - gradientFactor));
+			unsigned char blue = (unsigned char)((woodValue * 90.0f + 20.0f) * gradientFactor); // Blue increases with gradient
+
+			// Assign color to texture data
+			int index = (y * width + x) * 4;
+			data[index + 0] = red;    // R
+			data[index + 1] = green;  // G
+			data[index + 2] = blue;   // B
+			data[index + 3] = 255;    // A
+		}
+	}
+
+	return data;
+}
+
+void SceneNode::createTextureWood(int width, int height, float freq, float amp) {
+	glGenTextures(1, &texture);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	unsigned char* data = createWood(width, height, freq, amp);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+}
+
+void SceneNode::createTextureColor(int width, int height, float r, float g, float b) {
+
+}
+
+unsigned char* SceneNode::createColor(int width, int height, float r, float g, float b) {
+	unsigned char* data = new unsigned char[width * height * 4]; // RGBA
+
+	return data;
+}

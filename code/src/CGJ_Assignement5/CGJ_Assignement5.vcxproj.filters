@@ -82,5 +82,11 @@
     <None Include="..\shaders\base.frag">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\shaders\toon.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\shaders\toon.vert">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

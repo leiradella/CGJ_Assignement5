@@ -17,7 +17,7 @@ uniform Camera {
 
 void main(void)
 {
-	exPosition = inPosition;
+	exPosition = vec3(ModelMatrix * vec4(inPosition, 1.0f));
 	exTexcoord = inTexcoord;
 	exNormal = mat3(transpose(inverse(ModelMatrix))) * inNormal;
 
