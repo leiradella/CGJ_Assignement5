@@ -26,7 +26,7 @@ public:
 	
 	void setTexure(std::string texFile);
 
-	unsigned char* createWoodTexture(int width, int height);
+	unsigned char* createPerlinTexture(int width, int height);
 
 protected:
 	SceneNode* parent;

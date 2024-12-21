@@ -55,9 +55,13 @@ void SceneNode::setTexure(std::string texFile) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 
-	int width = 512, height = 512, nr_channels;
+	int width = 800, height = 800, nr_channels;
 	//unsigned char *data = stbi_load(texFullName.c_str(), &width, &height, &nr_channels, 4);
-	unsigned char* data = createWoodTexture(width, height);
+	unsigned char* data = createPerlinTexture(width, height);
+	FILE* fp = fopen("tex.data", "wb");
+	fwrite(data, 1, width * height * 4, fp);
+	fclose(fp);
+	//exit(0);
 	if (data != NULL) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
@@ -65,44 +69,162 @@ void SceneNode::setTexure(std::string texFile) {
 	else {
 		printf("Failed to load texture %s\n", texFullName.c_str());
 	}
-	stbi_image_free(data);
+	//stbi_image_free(data);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-unsigned char* SceneNode::createWoodTexture(int width, int height) {
-	unsigned char* noiseData = new unsigned char[width * height * 4]; //RGBA
-	std::srand(std::time(nullptr));
+//this is for making the gradiets in the grid for perlin noise
+glm::vec2 grad(int x, int y) {
+	// Pseudo-random hash function
+	uint32_t seed = 2166136261u; // FNV offset basis
+	seed ^= (uint32_t)x;
+	seed *= 16777619u; // FNV prime
+	seed ^= (uint32_t)y;
+	seed *= 16777619u;
 
-	for (int y = 0; y < height; ++y) {
-		float distance = 0;
-		for (int x = 0; x < width; ++x) {
-			//get the current grid coordinates
-			float nx = (float)(x) / (float)(width);
-			float ny = (float)(y) / (float)(height);
-			unsigned char r,g,b,a = 255.0f;
+	// Final mixing for better randomness
+	seed ^= (seed >> 15);
+	seed *= 2246822519u;
+	seed ^= (seed >> 13);
+	seed *= 3266489917u;
+	seed ^= (seed >> 16);
 
-			int check = x;
-			if ((check % 32) == 0) {
-				distance = 0;
-				r = 0;
-				g = 0;
-				b = 0;
+	// Convert hash into a pseudo-random direction vector
+	float angle = (float)(seed & 0xFFFFFF) / 0xFFFFFF * 2.0f * glm::pi<float>();
+	return glm::vec2(glm::cos(angle), glm::sin(angle));
+}
+
+//this calculates the value of each pixel of the texture using perlin noise
+float perlinNoise(float x, float y) {
+	
+	//////step 1: grid and weights
+	//grid coords
+	int x0 = (int)x;
+	int y0 = (int)y;
+	int x1 = x0 + 1;
+	int y1 = y0 + 1;
+	//weights for interpolation
+	float wx = x - (float)x0;
+	float wy = y - (float)y0;
+
+	//////step 2: gradients
+	////point A (x0, y0)
+	glm::vec2 gradient = grad(x0, y0);
+	//vector grid -> point
+	float dx = x - (float)x0;
+	float dy = y - (float)y0;
+	//dot product between random gradiant
+	float iA = (gradient.x * dx) + (gradient.y * dy);
+
+	////point B (x1, y0)
+	gradient = grad(x1, y0);
+	dx = x - (float)x1;
+	dy = y - (float)y0;
+	float iB = (gradient.x * dx) + (gradient.y * dy);
+
+	////point C (x1, y1)
+	gradient = grad(x1, y1);
+	dx = x - (float)x1;
+	dy = y - (float)y1;
+	float iC = (gradient.x * dx) + (gradient.y * dy);
+
+	////point D (x0, y1)
+	gradient = grad(x0, y1);
+	dx = x - (float)x0;
+	dy = y - (float)y1;
+	float iD = (gradient.x * dx) + (gradient.y * dy);
+
+	//step 3: Interpolate
+	float tx = 3 * glm::pow(wx, 2) - 2 * glm::pow(wx, 3);
+	float ty = 3 * glm::pow(wy, 2) - 2 * glm::pow(wy, 3);
+
+	float iAB = iA + tx * (iB - iA);
+	float iCD = iD + tx * (iC - iD);
+	float value = iAB + ty * (iCD - iAB);
+	return value;
+}
+
+unsigned char* SceneNode::createPerlinTexture(int width, int height) {
+	unsigned char* data = new unsigned char[width * height * 4]; //RGBA
+	const int GRID_SIZE = 32;
+
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++) {
+		
+			//harmonics
+			float freq = 1;
+			float amp = 1;
+			float val = 0;
+			float totalAmp = 0.0f;	
+			
+			for (int i = 0; i < 8; i++) {		
+				totalAmp += amp;
+				val += perlinNoise(x * freq / GRID_SIZE, y * freq / GRID_SIZE) * amp;
+				freq *= 2;
+				amp /= 2;
 			}
-			else {
-				distance += 0.1;
-				r = (unsigned char)(glm::clamp(139.0f + distance * 50.0f, 0.0f, 255.0f)); // Base brown: 139
-				g = (unsigned char)(glm::clamp(69.0f + distance * 30.0f, 0.0f, 255.0f));  // Base greenish tint: 69
-				b = (unsigned char)(glm::clamp(19.0f + distance * 20.0f, 0.0f, 255.0f));  // Base dark brown: 19
-			}
+
+			//clamp to prevent numbers going outside the range [-1, 1]
+			val /= totalAmp;
+			if (val < -1.0f) { val = -1.0f; }
+			else if (val > 1.0f) { val = 1.0f; }
+			val = (val + 1.0f) * 0.5f * 255.0f;
 
 			int index = ((y * width) + x) * 4;
-			noiseData[index+0] = r; //r
-			noiseData[index+1] = g; //g
-			noiseData[index+2] = b; //b
-			noiseData[index+3] = a; //a
+			data[index+0] = (unsigned char)val; //r
+			data[index+1] = (unsigned char)val; //g
+			data[index+2] = (unsigned char)val; //b
+			data[index+3] = (unsigned char)255; //a
 
 		}
 	}
-	return noiseData;
+	return data;
 }
 
+/*
+	//start of the grid block
+	int x0 = (int)(x);
+	int y0 = (int)(y);
+	//end of the grid block
+	int x1 = x0 + 1;
+	int y1 = y0 + 1;
+	//coordinates inside the grid block
+	float gx = x - (float)x0;
+	float gy = y - (float)y0;
+
+	//////top two cornres
+	//top left
+	glm::vec2 gradient = { glm::cos(std::rand()), glm::sin(std::rand()) };
+	gradient = glm::normalize(gradient);
+	float dx = x - (float)x0;
+	float dy = y - (float)y0;
+	float dot1 = (gradient.x * dx) + (gradient.y * dy);
+	//top right
+	gradient = { glm::cos(std::rand()), glm::sin(std::rand()) };
+	gradient = glm::normalize(gradient);
+	dx = x - (float)x1;
+	dy = y - (float)y0;
+	float dot2 = (gradient.x * dx) + (gradient.y * dy);
+	//interpolate both
+	float ix1 = (dot2 - dot1) * (3.0f - (gx * 2.0f)) * gx * gx * dot1;
+
+	//////bottom two cornres
+	//bottom left
+	gradient = { glm::cos(std::rand()), glm::sin(std::rand()) };
+	gradient = glm::normalize(gradient);
+	dx = x - (float)x0;
+	dy = y - (float)y1;
+	dot1 = (gradient.x * dx) + (gradient.y * dy);
+	//bottom right
+	gradient = { glm::cos(std::rand()), glm::sin(std::rand()) };
+	gradient = glm::normalize(gradient);
+	dx = x - (float)x1;
+	dy = y - (float)y1;
+	dot2 = (gradient.x * dx) + (gradient.y * dy);
+	//interpolate both
+	float ix2 = (dot2 - dot1) * (3.0f - (gx * 2.0f)) * gx * gx * dot1;
+
+	//interpolate the 2 results
+	float value = (ix2 - ix1) * (3.0f - (gy * 2.0f)) * gy * gy * ix1;
+	return value;
+*/
