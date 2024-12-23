@@ -8,6 +8,7 @@
 SceneNode::SceneNode(mgl::Mesh* mesh, mgl::ShaderProgram* Shaders) {
 	this->mesh = mesh;
 	parent = NULL;
+	texture = 0;
 	this->Shaders = Shaders;
 	position = { 0.0f, 0.0f, 0.0f };
 	rotation = { 0.0f, 0.0f, 0.0f };
@@ -24,12 +25,14 @@ void SceneNode::draw(GLint ModelMatrixId, GLint viewPosId, glm::vec3 eye) {
 		 glm::scale(scale);
 	if (mesh) {
 		Shaders->bind();
+		if (isOutline) { glDepthMask(GL_FALSE); }
 		glUniformMatrix4fv(ModelMatrixId, 1, GL_FALSE, glm::value_ptr(GlobalMatrix));
 		glUniform3fv(viewPosId, 1, glm::value_ptr(eye));
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture);
 		mesh->draw();
 		Shaders->unbind();
+		if (isOutline) { glDepthMask(GL_TRUE); }
 	}
 	for (int i = 0; i < children.size(); i++) {
 		children[i]->draw(ModelMatrixId, viewPosId, eye);
@@ -240,11 +243,29 @@ void SceneNode::createTextureWood(int width, int height, float freq, float amp) 
 }
 
 void SceneNode::createTextureColor(int width, int height, float r, float g, float b) {
-
+	glGenTextures(1, &texture);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	unsigned char* data = createColor(width, height, r, g, b);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	glGenerateMipmap(GL_TEXTURE_2D);
 }
 
 unsigned char* SceneNode::createColor(int width, int height, float r, float g, float b) {
 	unsigned char* data = new unsigned char[width * height * 4]; // RGBA
 
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++) {
+			int index = (y * width + x) * 4;
+			data[index + 0] = r;    // R
+			data[index + 1] = g;  // G
+			data[index + 2] = b;   // B
+			data[index + 3] = 255;    // A
+		}
+	}
 	return data;
 }

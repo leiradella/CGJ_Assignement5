@@ -15,6 +15,7 @@ void InputManager::mouseButtonCallback(GLFWwindow* window, int button, int actio
         }
         else if (action == GLFW_RELEASE) {
             leftMouse= NOT_PRESSED;
+            printf("(%f, %f, %f)\n", camera->getEye().x, camera->getEye().y, camera->getEye().z);
         }
     }
 }

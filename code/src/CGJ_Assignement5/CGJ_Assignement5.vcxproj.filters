@@ -76,16 +76,16 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\shaders\base.vert">
+    <None Include="..\shaders\default.vert">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\shaders\base.frag">
+    <None Include="..\shaders\default.frag">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="..\shaders\toon.frag">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\shaders\toon.vert">
+    <None Include="..\shaders\stencilColor.frag">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

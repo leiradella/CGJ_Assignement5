@@ -40,7 +40,7 @@ private:
     mgl::Mesh* Mesh = nullptr;
 
     mgl::Mesh* createMesh(std::string meshFile);
-    void createShaderPrograms(std::string shaderName);
+    void createShaderPrograms(std::string vertexName, std::string fragmentName);
     void createSceneGraph();
     void createCamera();
     void createInputManager();
@@ -62,11 +62,11 @@ mgl::Mesh* MyApp::createMesh(std::string meshFile) {
 
 ///////////////////////////////////////////////////////////////////////// SHADER
 
-void MyApp::createShaderPrograms(std::string shaderName) {
+void MyApp::createShaderPrograms(std::string vertexName, std::string fragmentName) {
     Shaders = new mgl::ShaderProgram();
 
-    std::string vertexShader = "../shaders/" + shaderName + ".vert";
-    std::string fragmentShader = "../shaders/" + shaderName + ".frag";
+    std::string vertexShader = "../shaders/" + vertexName + ".vert";
+    std::string fragmentShader = "../shaders/" + fragmentName + ".frag";
 
     Shaders->addShader(GL_VERTEX_SHADER, vertexShader.c_str());
     Shaders->addShader(GL_FRAGMENT_SHADER, fragmentShader.c_str());
@@ -87,17 +87,36 @@ void MyApp::createSceneGraph() {
     root = new SceneNode(nullptr, Shaders);
 
     //////add children
+    // cube map
+    createShaderPrograms("default", "cubemap");
+    
     //wooden base
-    mgl::Mesh* woodMesh = createMesh("wooden-base/bunny-vn-smooth.obj");
-    root->addChild(new SceneNode(woodMesh, Shaders));
+    createShaderPrograms("default", "default");
+    mgl::Mesh* baseMesh = createMesh("wooden-base/wooden-base.obj");
+    root->addChild(new SceneNode(baseMesh, Shaders));
+
+    //display object
+    createShaderPrograms("default", "outline");
+    mgl::Mesh* bunnyMesh = createMesh("wooden-base/wooden-base.obj");
+    root->addChild(new SceneNode(bunnyMesh, Shaders));
+    createShaderPrograms("default", "toon");
+    root->getChildren().at(1)->addChild(new SceneNode(bunnyMesh, Shaders));
 
     //get the children vector
     std::vector<SceneNode*> children = root->getChildren();
     
-    //set the wooden base a bit lower
-    //children[0]->setPosition(glm::vec3(0.0f, 0.0f, 0.0f));
-    children[0]->createTexturePerlin(512, 512);
-    //children[0]->createTextureImage("wooden-base/wooden-base.jpg");
+    //set the base a bit lower
+    children[1]->createTexturePerlin(512, 512);
+    children[1]->setPosition(glm::vec3(0.0f, 0.0f, 0.0f));
+
+    //display object border a bit bigger
+    children[2]->setScale(glm::vec3(1.05f, 1.05f, 1.05f));
+    children[2]->setPosition(glm::vec3(1.0f, 1.0f, 1.0f));
+    children[2]->setOutline(true);
+    children[2]->getChildren().at(0)->createTextureColor(512, 512, 255, 0, 0);
+    children[2]->getChildren().at(0)->setScale(glm::vec3(1 / 1.05, 1 / 1.05, 1 / 1.05));
+
+
 }
 
 ///////////////////////////////////////////////////////////////////////// CAMERA
@@ -122,7 +141,6 @@ void MyApp::drawScene() {
 ///////////////////////////////////////////////////////////////////////// CALLBACKS
 
 void MyApp::initCallback(GLFWwindow* win) {
-    createShaderPrograms("toon");
     createSceneGraph();
     createCamera();
     createInputManager();

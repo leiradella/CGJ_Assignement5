@@ -38,6 +38,8 @@ public:
 	void createTextureColor(int width, int height, float r, float g, float b);
 	unsigned char* createColor(int width, int height, float r, float g, float b);
 
+	void setOutline(bool outline) { isOutline = outline; }
+
 protected:
 	SceneNode* parent;
 	std::vector<SceneNode*> children;
@@ -46,6 +48,7 @@ protected:
 
 	//texture
 	GLuint texture;
+	bool isOutline = false;
 	
 	//default atributes for each object
 	glm::vec3 position;
