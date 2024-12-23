@@ -7,6 +7,7 @@ layout (location = 3) in vec2 inTexcoord;
 out vec3 exPosition;
 out vec2 exTexcoord;
 out vec3 exNormal;
+out vec3 viewPos;
 
 uniform mat4 ModelMatrix;
 
@@ -20,7 +21,8 @@ void main(void)
 	exPosition = vec3(ModelMatrix * vec4(inPosition, 1.0f));
 	exTexcoord = inTexcoord;
 	exNormal = mat3(transpose(inverse(ModelMatrix))) * inNormal;
+	mat4 invView = inverse(ViewMatrix);
+	viewPos = vec3(invView[3][0], invView[3][1], invView[3][2])/invView[3][3];
 
-	vec4 MCPosition = vec4(inPosition, 1.0);
-	gl_Position = ProjectionMatrix * ViewMatrix * ModelMatrix * MCPosition;
+	gl_Position = ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(inPosition, 1.0);
 }

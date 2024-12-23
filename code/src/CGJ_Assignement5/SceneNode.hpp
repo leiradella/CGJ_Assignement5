@@ -14,7 +14,7 @@ class SceneNode {
 public:
 	SceneNode(mgl::Mesh* m, mgl::ShaderProgram* Shaders);
 	void addChild(SceneNode* child);
-	void draw(GLint ModelMatrixId, GLint viewPosId, glm::vec3 eye);
+	void draw();
 	std::vector<SceneNode*> getChildren() { return children; };
 
 	void setPosition(glm::vec3 pos) { position = pos; }
@@ -38,17 +38,32 @@ public:
 	void createTextureColor(int width, int height, float r, float g, float b);
 	unsigned char* createColor(int width, int height, float r, float g, float b);
 
+	//Skybox
+	void createTextureSkybox(std::string name, std::string format);
+
+	//for toon shading outline
 	void setOutline(bool outline) { isOutline = outline; }
+	void setSkybox(bool skybox) { isSkybox = skybox; }
+
+	void addMat4Uniform(const std::string& name, const glm::mat4& value) { mat4Uniforms[name] = value; }
+	void addVec3Uniform(const std::string& name, const glm::vec3& value) { vec3Uniforms[name] = value; }
+	void addFloatUniform(const std::string& name, const float value) { floatUniforms[name] = value; }
+	void addIntUniform(const std::string& name, const int value) { intUniforms[name] = value; }
 
 protected:
 	SceneNode* parent;
 	std::vector<SceneNode*> children;
 	mgl::Mesh* mesh;
 	mgl::ShaderProgram* Shaders;
+	std::map<std::string, glm::mat4> mat4Uniforms;
+	std::map<std::string, glm::vec3> vec3Uniforms;
+	std::map<std::string, float> floatUniforms;
+	std::map<std::string, int> intUniforms;
 
 	//texture
 	GLuint texture;
 	bool isOutline = false;
+	bool isSkybox = false;
 	
 	//default atributes for each object
 	glm::vec3 position;

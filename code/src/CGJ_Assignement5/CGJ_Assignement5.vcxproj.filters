@@ -85,7 +85,16 @@
     <None Include="..\shaders\toon.frag">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\shaders\stencilColor.frag">
+    <None Include="..\shaders\outline.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\shaders\outline.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\shaders\skybox.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\shaders\skybox.vert">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

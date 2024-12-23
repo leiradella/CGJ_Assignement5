@@ -7,8 +7,7 @@ in vec3 exNormal;
 out vec4 FragmentColor;
 
 uniform sampler2D tex0;
-uniform vec3 viewPos;
-uniform int colorSteps = 3;
+uniform int colorSteps;
 
 void main(void)
 {

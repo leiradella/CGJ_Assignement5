@@ -86,37 +86,46 @@ void MyApp::createShaderPrograms(std::string vertexName, std::string fragmentNam
 void MyApp::createSceneGraph() {
     root = new SceneNode(nullptr, Shaders);
 
-    //////add children
-    // cube map
-    createShaderPrograms("default", "cubemap");
-    
-    //wooden base
+    //////step 1: create children with desired shaders
+    //1 - wooden base
     createShaderPrograms("default", "default");
     mgl::Mesh* baseMesh = createMesh("wooden-base/wooden-base.obj");
     root->addChild(new SceneNode(baseMesh, Shaders));
 
-    //display object
-    createShaderPrograms("default", "outline");
-    mgl::Mesh* bunnyMesh = createMesh("wooden-base/wooden-base.obj");
-    root->addChild(new SceneNode(bunnyMesh, Shaders));
+    //2 - display object
+    createShaderPrograms("outline", "outline");
+    mgl::Mesh* objectMesh = createMesh("wooden-base/wooden-base.obj");
+    root->addChild(new SceneNode(objectMesh, Shaders));
     createShaderPrograms("default", "toon");
-    root->getChildren().at(1)->addChild(new SceneNode(bunnyMesh, Shaders));
+    root->getChildren().at(1)->addChild(new SceneNode(objectMesh, Shaders));
+    
+    //3 - skybox
+    createShaderPrograms("skybox", "skybox");
+    mgl::Mesh* skyMesh = createMesh("skybox/cube-vn-smooth.obj");
+    root->addChild(new SceneNode(skyMesh, Shaders));
 
-    //get the children vector
+    //////step 2: set each nodes characteristics
+    ////get the children vector
     std::vector<SceneNode*> children = root->getChildren();
     
-    //set the base a bit lower
-    children[1]->createTexturePerlin(512, 512);
-    children[1]->setPosition(glm::vec3(0.0f, 0.0f, 0.0f));
+    ////1 - wooden base (phong shading)
+    children[0]->createTexturePerlin(512, 512);
+    children[0]->addVec3Uniform("lightPos", glm::vec3(0.0f, 2.0f, 0.0f));
+    children[0]->addVec3Uniform("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
 
-    //display object border a bit bigger
-    children[2]->setScale(glm::vec3(1.05f, 1.05f, 1.05f));
-    children[2]->setPosition(glm::vec3(1.0f, 1.0f, 1.0f));
-    children[2]->setOutline(true);
-    children[2]->getChildren().at(0)->createTextureColor(512, 512, 255, 0, 0);
-    children[2]->getChildren().at(0)->setScale(glm::vec3(1 / 1.05, 1 / 1.05, 1 / 1.05));
+    ////2 - display object (toon/outline)
+    //outline (outline)
+    children[1]->setScale(glm::vec3(1.05f, 1.05f, 1.05f));
+    children[1]->setPosition(glm::vec3(1.0f, 1.0f, 1.0f));
+    children[1]->setOutline(true);
+    //object (toon)
+    children[1]->getChildren().at(0)->createTextureColor(512, 512, 122, 27, 186);
+    children[1]->getChildren().at(0)->setScale(glm::vec3(1/1.05, 1/1.05, 1/1.05));
+    children[1]->getChildren().at(0)->addIntUniform("colorSteps", 3);
 
-
+    ////3 - skybox
+    children[2]->createTextureSkybox("skybox/sky-", "jpg");
+    children[2]->setSkybox(true);
 }
 
 ///////////////////////////////////////////////////////////////////////// CAMERA
@@ -135,7 +144,7 @@ void MyApp::createInputManager() {
 ///////////////////////////////////////////////////////////////////////// DRAW
 
 void MyApp::drawScene() {
-    root->draw(ModelMatrixId, glGetUniformLocation(Shaders->ProgramId, "viewPos"), Camera->getEye());
+    root->draw();
 }
 
 ///////////////////////////////////////////////////////////////////////// CALLBACKS

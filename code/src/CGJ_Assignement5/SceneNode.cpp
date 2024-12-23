@@ -15,7 +15,7 @@ SceneNode::SceneNode(mgl::Mesh* mesh, mgl::ShaderProgram* Shaders) {
 	scale = { 1.0f, 1.0f, 1.0f };
 }
 
-void SceneNode::draw(GLint ModelMatrixId, GLint viewPosId, glm::vec3 eye) {
+void SceneNode::draw() {
 	glm::mat4 saved = GlobalMatrix;
 	 GlobalMatrix *= 
 		 glm::translate(position) * 
@@ -23,19 +23,41 @@ void SceneNode::draw(GLint ModelMatrixId, GLint viewPosId, glm::vec3 eye) {
 		 glm::rotate(glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f)) *
 		 glm::rotate(glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f)) *
 		 glm::scale(scale);
+	addMat4Uniform("ModelMatrix", GlobalMatrix);
 	if (mesh) {
 		Shaders->bind();
 		if (isOutline) { glDepthMask(GL_FALSE); }
-		glUniformMatrix4fv(ModelMatrixId, 1, GL_FALSE, glm::value_ptr(GlobalMatrix));
-		glUniform3fv(viewPosId, 1, glm::value_ptr(eye));
+
+		//cycles through each type of uniform and sends them to the shaders.
+		//this was needed because different shaders have different uniforms
+		for (auto& uniform : mat4Uniforms) {
+			GLuint loc = glGetUniformLocation(Shaders->ProgramId, uniform.first.c_str());
+			glUniformMatrix4fv(loc, 1, GL_FALSE,glm::value_ptr(uniform.second));
+		}
+		for (auto& uniform : vec3Uniforms) {
+			GLuint loc = glGetUniformLocation(Shaders->ProgramId, uniform.first.c_str());
+			glUniform3fv(loc, 1, glm::value_ptr(uniform.second));
+		}
+		for (auto& uniform : floatUniforms) {
+			GLuint loc = glGetUniformLocation(Shaders->ProgramId, uniform.first.c_str());
+			glUniform1f(loc, uniform.second);
+		}
+		for (auto& uniform : intUniforms) {
+			GLuint loc = glGetUniformLocation(Shaders->ProgramId, uniform.first.c_str());
+			glUniform1i(loc, uniform.second);
+		}
+
+
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture);
+		if (isSkybox) { glBindTexture(GL_TEXTURE_CUBE_MAP, texture); }
+		else { glBindTexture(GL_TEXTURE_2D, texture); }
+
 		mesh->draw();
 		Shaders->unbind();
 		if (isOutline) { glDepthMask(GL_TRUE); }
 	}
 	for (int i = 0; i < children.size(); i++) {
-		children[i]->draw(ModelMatrixId, viewPosId, eye);
+		children[i]->draw();
 	}
 	GlobalMatrix = saved;
 }
@@ -58,7 +80,7 @@ void SceneNode::createTextureImage(std::string texFile) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 
-	int width = 800, height = 800, nr_channels;
+	int width, height, nr_channels;
 	unsigned char *data = stbi_load(texFullName.c_str(), &width, &height, &nr_channels, 4);
 	if (data != NULL) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
@@ -268,4 +290,51 @@ unsigned char* SceneNode::createColor(int width, int height, float r, float g, f
 		}
 	}
 	return data;
+}
+
+struct CubemapParams {
+	const GLenum name;
+	const GLint value;
+};
+static const CubemapParams CUBEMAP_PARAMS[] = {
+	{GL_TEXTURE_MAG_FILTER, GL_LINEAR},
+	{GL_TEXTURE_MIN_FILTER, GL_LINEAR},
+	{GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE},
+	{GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE},
+	{GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE} };
+
+struct CubemapData {
+	const char* suffix;
+	const GLenum target;
+};
+static const CubemapData CUBEMAP_TEXTURES[] = {
+	{"right", GL_TEXTURE_CUBE_MAP_POSITIVE_X},
+	{"left", GL_TEXTURE_CUBE_MAP_NEGATIVE_X},
+	{"top", GL_TEXTURE_CUBE_MAP_POSITIVE_Y},
+	{"bottom", GL_TEXTURE_CUBE_MAP_NEGATIVE_Y},
+	{"front", GL_TEXTURE_CUBE_MAP_POSITIVE_Z},
+	{"back", GL_TEXTURE_CUBE_MAP_NEGATIVE_Z} };
+
+void SceneNode::createTextureSkybox(std::string name, std::string format) {
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+
+	for (const auto& p : CUBEMAP_PARAMS) {
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, p.name, p.value);
+	}
+	for (const auto& t : CUBEMAP_TEXTURES) {
+		std::string fileName;
+		fileName = "../assets/" + name + t.suffix + "." + format;
+
+		int width, height, nr_channels;
+		unsigned char* data = stbi_load(fileName.c_str(), &width, &height, &nr_channels, 4);
+		printf("%d", nr_channels);
+		if (data == nullptr) {
+			printf("createTextureSkybox: error\n");
+			exit(EXIT_FAILURE);
+		}
+		glTexImage2D(t.target, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		stbi_image_free(data);
+	}
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 }
