@@ -41,7 +41,6 @@ public:
 	//Skybox
 	void createTextureSkybox(std::string name, std::string format);
 
-	//for toon shading outline
 	void setOutline(bool outline) { isOutline = outline; }
 	void setSkybox(bool skybox) { isSkybox = skybox; }
 

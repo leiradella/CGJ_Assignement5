@@ -25,9 +25,8 @@ void SceneNode::draw() {
 		 glm::scale(scale);
 	addMat4Uniform("ModelMatrix", GlobalMatrix);
 	if (mesh) {
-		Shaders->bind();
-		if (isOutline || isSkybox) { glDepthMask(GL_FALSE); }
-		if (isSkybox) { glCullFace(GL_FRONT); }
+		glActiveTexture(GL_TEXTURE0);
+		Shaders->bind(texture);
 
 		//cycles through each type of uniform and sends them to the shaders.
 		//this was needed because different shaders have different uniforms
@@ -49,14 +48,9 @@ void SceneNode::draw() {
 		}
 
 
-		glActiveTexture(GL_TEXTURE0);
-		if (isSkybox) { glBindTexture(GL_TEXTURE_CUBE_MAP, texture); }
-		else { glBindTexture(GL_TEXTURE_2D, texture); }
 
 		mesh->draw();
 		Shaders->unbind();
-		if (isOutline || isSkybox) { glDepthMask(GL_TRUE); }
-		if (isSkybox) { glCullFace(GL_BACK); }
 	}
 	for (int i = 0; i < children.size(); i++) {
 		children[i]->draw();

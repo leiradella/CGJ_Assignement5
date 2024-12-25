@@ -32,14 +32,12 @@ public:
 
 private:
     const GLuint UBO_BP = 0;
-    mgl::ShaderProgram* Shaders = nullptr;
     mgl::Camera* Camera = nullptr;
     InputManager *inputManager = nullptr;
     SceneNode* root = nullptr;
     mgl::Mesh* Mesh = nullptr;
 
     mgl::Mesh* createMesh(std::string meshFile);
-    void createShaderPrograms(std::string vertexName, std::string fragmentName);
     void createSceneGraph();
     void createCamera();
     void createInputManager();
@@ -59,75 +57,69 @@ mgl::Mesh* MyApp::createMesh(std::string meshFile) {
     return mesh;
 }
 
-///////////////////////////////////////////////////////////////////////// SHADER
-
-void MyApp::createShaderPrograms(std::string vertexName, std::string fragmentName) {
-    Shaders = new mgl::ShaderProgram();
-
-    std::string vertexShader = "../shaders/" + vertexName + ".vert";
-    std::string fragmentShader = "../shaders/" + fragmentName + ".frag";
-
-    Shaders->addShader(GL_VERTEX_SHADER, vertexShader.c_str());
-    Shaders->addShader(GL_FRAGMENT_SHADER, fragmentShader.c_str());
-
-    //Shaders->addAttribute(mgl::POSITION_ATTRIBUTE, mgl::Mesh::POSITION);
-    //Shaders->addAttribute(mgl::NORMAL_ATTRIBUTE, mgl::Mesh::NORMAL);
-    //Shaders->addUniform(mgl::MODEL_MATRIX);
-    //Shaders->addUniformBlock(mgl::CAMERA_BLOCK, UBO_BP);
-    
-    Shaders->create();
-}
-
 ///////////////////////////////////////////////////////////////////////// SCENE GRAPH
 
 void MyApp::createSceneGraph() {
-    root = new SceneNode(nullptr, Shaders);
+    mgl::PhongShader* phongShader = new mgl::PhongShader();
+    mgl::ToonShader* toonShader = new mgl::ToonShader();
+    mgl::GlassShader* glassShader = new mgl::GlassShader();
+    mgl::OutlineShader* outlineShader = new mgl::OutlineShader();
+    mgl::SkyboxShader* skyboxShader = new mgl::SkyboxShader();
+
+    root = new SceneNode(nullptr, nullptr);
 
     //////step 1: create children with desired shaders
-    //1 - wooden base
-    createShaderPrograms("default", "default");
-    mgl::Mesh* baseMesh = createMesh("wooden-base/wooden-base.obj");
-    root->addChild(new SceneNode(baseMesh, Shaders));
-
-    //2 - display object
-    createShaderPrograms("outline", "outline");
-    mgl::Mesh* objectMesh = createMesh("wooden-base/wooden-base.obj");
-    root->addChild(new SceneNode(objectMesh, Shaders));
-    createShaderPrograms("default", "toon");
-    root->getChildren().at(1)->addChild(new SceneNode(objectMesh, Shaders));
-    
-    //3 - skybox
-    createShaderPrograms("skybox", "skybox");
+    //1 - skybox
+    skyboxShader->createShaderPrograms("skybox", "skybox");
     mgl::Mesh* skyMesh = createMesh("skybox/cube-vt4.obj");
-    root->addChild(new SceneNode(skyMesh, Shaders));
+    root->addChild(new SceneNode(skyMesh, skyboxShader));
+
+    //2 - wooden base
+    phongShader->createShaderPrograms("default", "default");
+    mgl::Mesh* baseMesh = createMesh("base/base.obj");
+    root->addChild(new SceneNode(baseMesh, phongShader));
+
+    //3 - display object
+    outlineShader->createShaderPrograms("outline", "outline");
+    mgl::Mesh* objectMesh = createMesh("base/base.obj");
+    root->addChild(new SceneNode(objectMesh, outlineShader));
+    toonShader->createShaderPrograms("toon", "toon");
+    root->getChildren().at(2)->addChild(new SceneNode(objectMesh, toonShader));
+
+    //4 - glass dome
+    glassShader->createShaderPrograms("default", "default");
+    mgl::Mesh* domeMesh = createMesh("dome/dome.obj");
+    root->addChild(new SceneNode(domeMesh, glassShader));
 
     //////step 2: set each nodes characteristics
     ////get the children vector
     std::vector<SceneNode*> children = root->getChildren();
     
-    ////1 - wooden base (phong shading)
-    children[0]->createTexturePerlin(512, 512);
-    children[0]->addVec3Uniform("lightPos", glm::vec3(0.0f, 2.0f, 0.0f));
-    children[0]->addVec3Uniform("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
-    children[0]->setPosition(glm::vec3(0.0f, 0.0f, 0.0f));
+    ////1 - skybox
+    children[0]->createTextureSkybox("skybox/sky", "jpg");
+    children[0]->setSkybox(true);
 
-    ////2 - display object (toon/outline)
+    ////2 - wooden base (phong shading)
+    children[1]->createTexturePerlin(512, 512);
+    children[1]->addVec3Uniform("lightPos", glm::vec3(0.0f, 2.0f, 0.0f));
+    children[1]->addVec3Uniform("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
+    children[1]->setPosition(glm::vec3(0.0f, -1.0f, 0.0f));
+
+    ////3 - display object (toon/outline)
     //outline (outline)
-    children[1]->setScale(glm::vec3(1.05f, 1.05f, 1.05f));
-    children[1]->setPosition(glm::vec3(1.0f, 1.0f, 1.0f));
-    children[1]->setOutline(true);
+    children[2]->setScale(glm::vec3(1.05f, 1.05f, 1.05f));
+    children[2]->setPosition(glm::vec3(1.0f, 1.0f, 1.0f));
+    children[2]->setOutline(true);
     //object (toon)
-    children[1]->getChildren().at(0)->createTextureColor(512, 512, 122, 27, 186);
-    children[1]->getChildren().at(0)->setScale(glm::vec3(1/1.05, 1/1.05, 1/1.05));
-    children[1]->getChildren().at(0)->addIntUniform("colorSteps", 3);
+    children[2]->getChildren().at(0)->createTextureColor(512, 512, 122, 27, 186);
+    children[2]->getChildren().at(0)->setScale(glm::vec3(1/1.05, 1/1.05, 1/1.05));
+    children[2]->getChildren().at(0)->addIntUniform("colorSteps", 3);
 
-    ////3 - skybox
-    //children[2]->createTextureImage("skybox/sky-right.jpg");
-    //children[2]->addVec3Uniform("lightPos", glm::vec3(0.0f, 2.0f, 0.0f));
-    //children[2]->addVec3Uniform("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
-    
-    children[2]->createTextureSkybox("skybox/sky", "jpg");
-    children[2]->setSkybox(true);
+    ////4 = glass dome
+    children[3]->addVec3Uniform("lightPos", glm::vec3(0.0f, 2.0f, 0.0f));
+    children[3]->addVec3Uniform("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
+    children[3]->createTexturePerlin(512, 512);
+    children[3]->setPosition(glm::vec3(1.0f, 1.0f, 1.0f));
 }
 
 ///////////////////////////////////////////////////////////////////////// CAMERA

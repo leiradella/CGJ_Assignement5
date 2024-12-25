@@ -97,5 +97,11 @@
     <None Include="..\shaders\skybox.vert">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\shaders\glass.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\shaders\glass.vert">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

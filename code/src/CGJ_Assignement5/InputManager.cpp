@@ -41,7 +41,7 @@ void InputManager::cursorCallback(GLFWwindow* window, double xpos, double ypos) 
         radius = glm::length(eye - center);
 
         //the rotation is contrary to the delta of the cursor, that's why we do -
-        const float sensitivity = 0.01f;
+        const float sensitivity = 0.005f;
         yaw -= (float)deltaX * sensitivity;
         pitch -= (float)deltaY * sensitivity;
 

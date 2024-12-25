@@ -55,13 +55,45 @@ public:
   void addUniformBlock(const std::string &name, const GLuint binding_point);
   bool isUniformBlock(const std::string &name);
   void create();
-  void bind();
-  void unbind();
+  virtual void bind(GLuint texture) = 0;
+  virtual void unbind() = 0;
 
-private:
+  void createShaderPrograms(std::string vertexName, std::string fragmentName);
+
+protected:
   const std::string read(const std::string &filename);
   void checkCompilation(const GLuint shader_id, const std::string &filename);
   void checkLinkage();
+};
+
+class PhongShader : public ShaderProgram {
+public:
+    void bind(GLuint texture) override;
+    void unbind() override;
+};
+
+class ToonShader : public ShaderProgram {
+public:
+    void bind(GLuint texture) override;
+    void unbind() override;
+};
+
+class GlassShader : public ShaderProgram {
+public:
+    void bind(GLuint texture) override;
+    void unbind() override;
+};
+
+class SkyboxShader : public ShaderProgram {
+public:
+    void bind(GLuint texture) override;
+    void unbind() override;
+};
+
+class OutlineShader : public ShaderProgram {
+public:
+    void bind(GLuint texture) override;
+    void unbind() override;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

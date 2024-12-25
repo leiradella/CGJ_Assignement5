@@ -44,6 +44,8 @@
   <ItemGroup>
     <None Include="..\shaders\default.frag" />
     <None Include="..\shaders\default.vert" />
+    <None Include="..\shaders\glass.frag" />
+    <None Include="..\shaders\glass.vert" />
     <None Include="..\shaders\outline.frag" />
     <None Include="..\shaders\outline.vert" />
     <None Include="..\shaders\skybox.frag" />
