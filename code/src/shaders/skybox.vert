@@ -1,9 +1,8 @@
 #version 330 core
 
 layout (location = 1) in vec3 inPosition;
-layout (location = 3) in vec2 inTexcoords;
 
-out vec2 TexCoords;
+out vec3 exTexcoords;
 
 uniform Camera {
    mat4 ViewMatrix;
@@ -11,8 +10,9 @@ uniform Camera {
 };
 
 void main(void) {
-    TexCoords = inTexcoords;
+    exTexcoords = inPosition;
     mat4 viewNoTranslation = mat4(mat3(ViewMatrix));
     vec4 ClipCoordVertex = ProjectionMatrix * viewNoTranslation * vec4(inPosition, 1.0);
-    gl_Position = ClipCoordVertex.xyzz;
+    //gl_Position = ProjectionMatrix * viewNoTranslation * vec4(inPosition, 1.0);
+    gl_Position = ClipCoordVertex.xyww;
 }

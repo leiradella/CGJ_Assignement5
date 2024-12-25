@@ -26,7 +26,8 @@ void SceneNode::draw() {
 	addMat4Uniform("ModelMatrix", GlobalMatrix);
 	if (mesh) {
 		Shaders->bind();
-		if (isOutline) { glDepthMask(GL_FALSE); }
+		if (isOutline || isSkybox) { glDepthMask(GL_FALSE); }
+		if (isSkybox) { glCullFace(GL_FRONT); }
 
 		//cycles through each type of uniform and sends them to the shaders.
 		//this was needed because different shaders have different uniforms
@@ -54,7 +55,8 @@ void SceneNode::draw() {
 
 		mesh->draw();
 		Shaders->unbind();
-		if (isOutline) { glDepthMask(GL_TRUE); }
+		if (isOutline || isSkybox) { glDepthMask(GL_TRUE); }
+		if (isSkybox) { glCullFace(GL_BACK); }
 	}
 	for (int i = 0; i < children.size(); i++) {
 		children[i]->draw();
@@ -308,12 +310,12 @@ struct CubemapData {
 	const GLenum target;
 };
 static const CubemapData CUBEMAP_TEXTURES[] = {
-	{"right", GL_TEXTURE_CUBE_MAP_POSITIVE_X},
-	{"left", GL_TEXTURE_CUBE_MAP_NEGATIVE_X},
-	{"top", GL_TEXTURE_CUBE_MAP_POSITIVE_Y},
-	{"bottom", GL_TEXTURE_CUBE_MAP_NEGATIVE_Y},
-	{"front", GL_TEXTURE_CUBE_MAP_POSITIVE_Z},
-	{"back", GL_TEXTURE_CUBE_MAP_NEGATIVE_Z} };
+	{"-right", GL_TEXTURE_CUBE_MAP_POSITIVE_X},
+	{"-left", GL_TEXTURE_CUBE_MAP_NEGATIVE_X},
+	{"-top", GL_TEXTURE_CUBE_MAP_POSITIVE_Y},
+	{"-bottom", GL_TEXTURE_CUBE_MAP_NEGATIVE_Y},
+	{"-front", GL_TEXTURE_CUBE_MAP_POSITIVE_Z},
+	{"-back", GL_TEXTURE_CUBE_MAP_NEGATIVE_Z} };
 
 void SceneNode::createTextureSkybox(std::string name, std::string format) {
 	glGenTextures(1, &texture);

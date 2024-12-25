@@ -36,7 +36,6 @@ private:
     mgl::Camera* Camera = nullptr;
     InputManager *inputManager = nullptr;
     SceneNode* root = nullptr;
-    GLint ModelMatrixId;
     mgl::Mesh* Mesh = nullptr;
 
     mgl::Mesh* createMesh(std::string meshFile);
@@ -71,14 +70,12 @@ void MyApp::createShaderPrograms(std::string vertexName, std::string fragmentNam
     Shaders->addShader(GL_VERTEX_SHADER, vertexShader.c_str());
     Shaders->addShader(GL_FRAGMENT_SHADER, fragmentShader.c_str());
 
-    Shaders->addAttribute(mgl::POSITION_ATTRIBUTE, mgl::Mesh::POSITION);
-    Shaders->addAttribute(mgl::NORMAL_ATTRIBUTE, mgl::Mesh::NORMAL);
-
-    Shaders->addUniform(mgl::MODEL_MATRIX);
-    Shaders->addUniformBlock(mgl::CAMERA_BLOCK, UBO_BP);
+    //Shaders->addAttribute(mgl::POSITION_ATTRIBUTE, mgl::Mesh::POSITION);
+    //Shaders->addAttribute(mgl::NORMAL_ATTRIBUTE, mgl::Mesh::NORMAL);
+    //Shaders->addUniform(mgl::MODEL_MATRIX);
+    //Shaders->addUniformBlock(mgl::CAMERA_BLOCK, UBO_BP);
+    
     Shaders->create();
-
-    ModelMatrixId = Shaders->Uniforms[mgl::MODEL_MATRIX].index;
 }
 
 ///////////////////////////////////////////////////////////////////////// SCENE GRAPH
@@ -101,7 +98,7 @@ void MyApp::createSceneGraph() {
     
     //3 - skybox
     createShaderPrograms("skybox", "skybox");
-    mgl::Mesh* skyMesh = createMesh("skybox/cube-vn-smooth.obj");
+    mgl::Mesh* skyMesh = createMesh("skybox/cube-vt4.obj");
     root->addChild(new SceneNode(skyMesh, Shaders));
 
     //////step 2: set each nodes characteristics
@@ -112,6 +109,7 @@ void MyApp::createSceneGraph() {
     children[0]->createTexturePerlin(512, 512);
     children[0]->addVec3Uniform("lightPos", glm::vec3(0.0f, 2.0f, 0.0f));
     children[0]->addVec3Uniform("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
+    children[0]->setPosition(glm::vec3(0.0f, 0.0f, 0.0f));
 
     ////2 - display object (toon/outline)
     //outline (outline)
@@ -124,7 +122,11 @@ void MyApp::createSceneGraph() {
     children[1]->getChildren().at(0)->addIntUniform("colorSteps", 3);
 
     ////3 - skybox
-    children[2]->createTextureSkybox("skybox/sky-", "jpg");
+    //children[2]->createTextureImage("skybox/sky-right.jpg");
+    //children[2]->addVec3Uniform("lightPos", glm::vec3(0.0f, 2.0f, 0.0f));
+    //children[2]->addVec3Uniform("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
+    
+    children[2]->createTextureSkybox("skybox/sky", "jpg");
     children[2]->setSkybox(true);
 }
 
