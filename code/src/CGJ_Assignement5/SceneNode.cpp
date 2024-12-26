@@ -38,6 +38,10 @@ void SceneNode::draw() {
 			GLuint loc = glGetUniformLocation(Shaders->ProgramId, uniform.first.c_str());
 			glUniform3fv(loc, 1, glm::value_ptr(uniform.second));
 		}
+		for (auto& uniform : vec2Uniforms) {
+			GLuint loc = glGetUniformLocation(Shaders->ProgramId, uniform.first.c_str());
+			glUniform2fv(loc, 1, glm::value_ptr(uniform.second));
+		}
 		for (auto& uniform : floatUniforms) {
 			GLuint loc = glGetUniformLocation(Shaders->ProgramId, uniform.first.c_str());
 			glUniform1f(loc, uniform.second);
@@ -46,8 +50,6 @@ void SceneNode::draw() {
 			GLuint loc = glGetUniformLocation(Shaders->ProgramId, uniform.first.c_str());
 			glUniform1i(loc, uniform.second);
 		}
-
-
 
 		mesh->draw();
 		Shaders->unbind();
@@ -324,7 +326,6 @@ void SceneNode::createTextureSkybox(std::string name, std::string format) {
 
 		int width, height, nr_channels;
 		unsigned char* data = stbi_load(fileName.c_str(), &width, &height, &nr_channels, 4);
-		printf("%d", nr_channels);
 		if (data == nullptr) {
 			printf("createTextureSkybox: error\n");
 			exit(EXIT_FAILURE);

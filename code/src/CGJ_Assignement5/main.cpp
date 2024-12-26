@@ -74,20 +74,20 @@ void MyApp::createSceneGraph() {
     mgl::Mesh* skyMesh = createMesh("skybox/cube-vt4.obj");
     root->addChild(new SceneNode(skyMesh, skyboxShader));
 
-    //2 - wooden base
+    //2 - base
     phongShader->createShaderPrograms("default", "default");
     mgl::Mesh* baseMesh = createMesh("base/base.obj");
     root->addChild(new SceneNode(baseMesh, phongShader));
 
     //3 - display object
     outlineShader->createShaderPrograms("outline", "outline");
-    mgl::Mesh* objectMesh = createMesh("base/base.obj");
+    mgl::Mesh* objectMesh = createMesh("display-object/Marcus_Arelius.obj");
     root->addChild(new SceneNode(objectMesh, outlineShader));
     toonShader->createShaderPrograms("toon", "toon");
     root->getChildren().at(2)->addChild(new SceneNode(objectMesh, toonShader));
 
     //4 - glass dome
-    glassShader->createShaderPrograms("default", "default");
+    glassShader->createShaderPrograms("glass", "glass");
     mgl::Mesh* domeMesh = createMesh("dome/dome.obj");
     root->addChild(new SceneNode(domeMesh, glassShader));
 
@@ -95,31 +95,42 @@ void MyApp::createSceneGraph() {
     ////get the children vector
     std::vector<SceneNode*> children = root->getChildren();
     
+    //create some variables
+    glm::vec3 lightPos(-0.5f, 2.0f, 0.5f);
+    glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
+    int ToonColorSteps = 3;
+
     ////1 - skybox
     children[0]->createTextureSkybox("skybox/sky", "jpg");
     children[0]->setSkybox(true);
 
-    ////2 - wooden base (phong shading)
+    ////2 - base (phong shading)
     children[1]->createTexturePerlin(512, 512);
-    children[1]->addVec3Uniform("lightPos", glm::vec3(0.0f, 2.0f, 0.0f));
-    children[1]->addVec3Uniform("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
+    children[1]->addVec3Uniform("lightPos", lightPos);
+    children[1]->addVec3Uniform("lightColor", lightColor);
     children[1]->setPosition(glm::vec3(0.0f, -1.0f, 0.0f));
 
     ////3 - display object (toon/outline)
     //outline (outline)
-    children[2]->setScale(glm::vec3(1.05f, 1.05f, 1.05f));
-    children[2]->setPosition(glm::vec3(1.0f, 1.0f, 1.0f));
+    int width, height;
+    glfwGetWindowSize(glfwGetCurrentContext(), &width, &height);
+    children[2]->setScale(glm::vec3(0.00005, 0.00005, 0.00005)); //why is it so big jesus
+    children[2]->setPosition(glm::vec3(0.6f, 0.0f, 0.6f));
+    children[2]->setRotation(glm::vec3(90.0f, 0.0f, 0.0f));
     children[2]->setOutline(true);
+    children[2]->addFloatUniform("OutlineThickness", 0.5);
     //object (toon)
-    children[2]->getChildren().at(0)->createTextureColor(512, 512, 122, 27, 186);
-    children[2]->getChildren().at(0)->setScale(glm::vec3(1/1.05, 1/1.05, 1/1.05));
-    children[2]->getChildren().at(0)->addIntUniform("colorSteps", 3);
+    //children[2]->getChildren().at(0)->createTexturePerlin(512, 512);
+    children[2]->getChildren().at(0)->createTextureColor(512, 512, 255, 255, 255);
+    children[2]->getChildren().at(0)->addIntUniform("colorSteps", ToonColorSteps);
+    children[2]->getChildren().at(0)->addVec3Uniform("lightPos", lightPos);
+    children[2]->getChildren().at(0)->addVec3Uniform("lightColor", lightColor);
 
     ////4 = glass dome
-    children[3]->addVec3Uniform("lightPos", glm::vec3(0.0f, 2.0f, 0.0f));
-    children[3]->addVec3Uniform("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
-    children[3]->createTexturePerlin(512, 512);
-    children[3]->setPosition(glm::vec3(1.0f, 1.0f, 1.0f));
+    children[3]->createTextureSkybox("skybox/sky", "jpg");
+    children[3]->addFloatUniform("refractiveIndex", 0.96f);
+    children[3]->addFloatUniform("airIndex", 1.0f);
+    children[3]->setPosition(glm::vec3(0.0f, 0.25f, 0.0f));
 }
 
 ///////////////////////////////////////////////////////////////////////// CAMERA

@@ -169,7 +169,9 @@ namespace mgl {
     //glass
     void GlassShader::bind(GLuint texture) { 
         glUseProgram(ProgramId); 
-        glBindTexture(GL_TEXTURE_2D, texture);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
     void GlassShader::unbind() { glUseProgram(0); }
@@ -180,7 +182,7 @@ namespace mgl {
         glDepthMask(GL_FALSE);
         glCullFace(GL_FRONT);
         glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
-        printf("ola\n");
+        glDisable(GL_BLEND);
     }
 
     void SkyboxShader::unbind() {
@@ -194,7 +196,6 @@ namespace mgl {
         glUseProgram(ProgramId);
         glDepthMask(GL_FALSE);
         glBindTexture(GL_TEXTURE_2D, texture);
-        printf("ola\n");
     }
 
     void OutlineShader::unbind() {

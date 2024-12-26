@@ -46,6 +46,7 @@ public:
 
 	void addMat4Uniform(const std::string& name, const glm::mat4& value) { mat4Uniforms[name] = value; }
 	void addVec3Uniform(const std::string& name, const glm::vec3& value) { vec3Uniforms[name] = value; }
+	void addVec2Uniform(const std::string& name, const glm::vec2& value) { vec2Uniforms[name] = value; }
 	void addFloatUniform(const std::string& name, const float value) { floatUniforms[name] = value; }
 	void addIntUniform(const std::string& name, const int value) { intUniforms[name] = value; }
 
@@ -56,6 +57,7 @@ protected:
 	mgl::ShaderProgram* Shaders;
 	std::map<std::string, glm::mat4> mat4Uniforms;
 	std::map<std::string, glm::vec3> vec3Uniforms;
+	std::map<std::string, glm::vec2> vec2Uniforms;
 	std::map<std::string, float> floatUniforms;
 	std::map<std::string, int> intUniforms;
 
