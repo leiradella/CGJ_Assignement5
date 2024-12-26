@@ -25,11 +25,6 @@ void main(void) {
     float f = pow((airIndex - refractiveIndex)/(airIndex + refractiveIndex),2.0);
     float fresnel = f + (1-f)*pow(1 - dot(V, N), 5.0);
     
-    //FragmentColor = vec4(0.5 * (refracted + 1.0), 1.0);
-    //FragmentColor = vec4(0.5 * (reflected + 1.0), 1.0);
-    //FragmentColor = reflectedColor;
-    //FragmentColor = refractedColor;
     FragmentColor = mix(refractedColor, reflectedColor, fresnel);
-    //FragmentColor = vec4(1.0,0.0,0.0,1.0);
     FragmentColor.a = 0.3;
 }
