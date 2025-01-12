@@ -8,6 +8,7 @@ out vec4 FragmentColor;
 uniform samplerCube skybox;
 uniform float refractiveIndex;
 uniform float airIndex;
+uniform float alpha;
 
 void main(void) {
     vec3 V = normalize(ViewDir);
@@ -26,5 +27,5 @@ void main(void) {
     float fresnel = f + (1-f)*pow(1 - dot(V, N), 5.0);
     
     FragmentColor = mix(refractedColor, reflectedColor, fresnel);
-    FragmentColor.a = 0.3;
+    FragmentColor.a = alpha;
 }

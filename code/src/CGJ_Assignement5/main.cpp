@@ -130,6 +130,7 @@ void MyApp::createSceneGraph() {
     children[3]->createTextureSkybox("skybox/sky", "jpg");
     children[3]->addFloatUniform("refractiveIndex", 0.96f);
     children[3]->addFloatUniform("airIndex", 1.0f);
+    children[3]->addFloatUniform("alpha", 0.3f);
     children[3]->setPosition(glm::vec3(0.0f, 0.25f, 0.0f));
 }
 
